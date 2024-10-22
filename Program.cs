@@ -39,7 +39,15 @@ internal class Program
         Ed25519PrivateKeyParameters privateEd25519KeyReloaded1 = (Ed25519PrivateKeyParameters)ImportPrivateFromPkcs8Pem(privateEd25519Pkcs8Pem);
         Ed25519PublicKeyParameters publicEd25519KeyReloaded1 = (Ed25519PublicKeyParameters)ImportPublicFromSpkiPem(publicEd25519SpkiPem);
 
-        // Test 4: X25519 key agreement
+        // Test 4a: Derive public X25519 key from private X25519 key
+        X25519PublicKeyParameters derivedPublicX25519Key = privateX25519Key.GeneratePublicKey();
+        Console.WriteLine(ExportPublicAsSpkiPem(derivedPublicX25519Key));
+
+        // Test 4b: Derive public Ed25519 key from private Ed25519 key
+        Ed25519PublicKeyParameters derivedPublicEd25519Key = privateEd25519Key.GeneratePublicKey();
+        Console.WriteLine(ExportPublicAsSpkiPem(derivedPublicEd25519Key));
+
+        // Test 5: X25519 key agreement
         (X25519PrivateKeyParameters privateX25519KeyOtherSide, X25519PublicKeyParameters publicX25519KeyOtherSide) = CreateX25519KeyPair();
         byte[] sharedSecret = CreateX25519SharedSecret(privateX25519KeyReloaded1, publicX25519KeyOtherSide);
         byte[] sharedSecretOtherSide = CreateX25519SharedSecret(privateX25519KeyOtherSide, publicX25519KeyReloaded1);
@@ -47,7 +55,7 @@ internal class Program
         Console.WriteLine(Hex.ToHexString(sharedSecretOtherSide));
         Console.WriteLine();
 
-        // Test 5: Ed25519 signing/verifying
+        // Test 6: Ed25519 signing/verifying
         byte[] message = Encoding.UTF8.GetBytes("The quick brown fox jumps ove rthe lazy dog");
         byte[] signature = Ed25519Sign(message, privateEd25519KeyReloaded1);
         bool verified = Ed25519Verify(message, signature, publicEd25519KeyReloaded1);
